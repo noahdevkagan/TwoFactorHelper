@@ -10,13 +10,34 @@ int main(int argc, char *argv[]) {
     uint32_t size = sizeof(path);
     _NSGetExecutablePath(path, &size);
 
-    // Resolve to Resources/twofactor.py relative to this binary
-    char *dir = dirname(path);  // .app/Contents/MacOS
+    char *dir = dirname(path);  /* .app/Contents/MacOS */
+    char setup[4096];
     char script[4096];
+    snprintf(setup, sizeof(setup), "%s/../Resources/setup.sh", dir);
     snprintf(script, sizeof(script), "%s/../Resources/twofactor.py", dir);
 
-    char *python = "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/bin/python3.9";
+    /* Run setup first (installs PyObjC if needed) */
+    char setup_cmd[4200];
+    snprintf(setup_cmd, sizeof(setup_cmd), "/bin/bash \"%s\"", setup);
+    system(setup_cmd);
 
-    execl(python, "python3.9", script, NULL);
+    /* Try python3 paths in order of preference */
+    const char *pythons[] = {
+        "/usr/bin/python3",
+        "/usr/local/bin/python3",
+        "/opt/homebrew/bin/python3",
+        "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/Current/bin/python3",
+        "/Library/Developer/CommandLineTools/usr/bin/python3",
+        NULL
+    };
+
+    for (int i = 0; pythons[i] != NULL; i++) {
+        if (access(pythons[i], X_OK) == 0) {
+            execl(pythons[i], "python3", script, NULL);
+        }
+    }
+
+    /* Last resort: use PATH */
+    execlp("python3", "python3", script, NULL);
     return 1;
 }

@@ -184,9 +184,10 @@
       <ol class="steps">
         <li>Download and unzip <strong>TwoFactorHelper.zip</strong></li>
         <li>Move <strong>TwoFactorHelper.app</strong> to your Applications folder</li>
+        <li><strong>Important:</strong> Right-click the app and choose <strong>Open</strong> the first time (macOS blocks unsigned apps). If you see "damaged" warning, open Terminal and run: <code style="background:rgba(255,255,255,0.08);padding:2px 6px;border-radius:4px;font-size:13px;">xattr -cr /Applications/TwoFactorHelper.app</code></li>
         <li>Open <strong>System Settings &gt; Privacy &amp; Security &gt; Full Disk Access</strong> and add TwoFactorHelper</li>
         <li>Launch the app &mdash; look for the shield icon in your menu bar</li>
-        <li>That's it! Next time you get a 2FA text, the code auto-copies to your clipboard</li>
+        <li>That's it! First launch may take a moment to install dependencies. Next time you get a 2FA text, the code auto-copies to your clipboard</li>
       </ol>
     </div>
 
