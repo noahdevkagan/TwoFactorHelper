@@ -6,3 +6,6 @@ icon_preview.png
 TwoFactorHelper.zip
 /TwoFactorHelper
 *.o
+build/
+build_env/
+dist/
