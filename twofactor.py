@@ -64,6 +64,48 @@ CODE_PATTERNS = [
 DB_PATH = os.path.expanduser("~/Library/Messages/chat.db")
 
 
+def decode_attributed_body(blob):
+    """Extract plain text from the attributedBody binary blob.
+
+    On macOS Ventura+, Messages may store text only in this column.
+    The blob is a binary plist containing an NSAttributedString.
+    The plain text is embedded as a UTF-8 string after a specific marker.
+    """
+    if not blob:
+        return None
+    try:
+        # The streamtyped format embeds the plain text after "NSString" marker
+        # followed by a length byte and the UTF-8 text, ending before "NSDictionary"
+        data = bytes(blob) if not isinstance(blob, bytes) else blob
+        # Find the UTF-8 text between common markers
+        # Pattern: text appears after "+NSString" type info
+        marker = b"NSString"
+        idx = data.find(marker)
+        if idx == -1:
+            return None
+        # Skip past marker and type info bytes to reach the text
+        start = idx + len(marker)
+        # Look for the length prefix - skip small control bytes
+        while start < len(data) and data[start] < 32:
+            start += 1
+        # Read length byte(s)
+        if start >= len(data):
+            return None
+        length = data[start]
+        if length == 0x81:  # two-byte length
+            start += 1
+            if start >= len(data):
+                return None
+            length = data[start]
+        start += 1
+        if start + length > len(data):
+            return None
+        text = data[start:start + length].decode("utf-8", errors="replace")
+        return text if text.strip() else None
+    except Exception:
+        return None
+
+
 def extract_code(text):
     """Extract a 2FA code from message text."""
     for pattern in CODE_PATTERNS:
@@ -133,8 +175,9 @@ class MessageMonitor:
 
             cursor.execute(
                 """
-                SELECT text, date FROM message
-                WHERE date > ? AND text IS NOT NULL AND is_from_me = 0
+                SELECT text, date, attributedBody FROM message
+                WHERE date > ? AND is_from_me = 0
+                AND (text IS NOT NULL OR attributedBody IS NOT NULL)
                 ORDER BY date DESC
                 LIMIT 10
                 """,
@@ -147,14 +190,17 @@ class MessageMonitor:
             max_date = self.last_date
             result = None
 
-            for text, date in rows:
+            for text, date, attributed_body in rows:
                 if date > max_date:
                     max_date = date
 
-                if text and result is None:
-                    code = extract_code(text)
+                # Use text column first, fall back to attributedBody
+                msg_text = text or decode_attributed_body(attributed_body)
+
+                if msg_text and result is None:
+                    code = extract_code(msg_text)
                     if code:
-                        result = (code, text)
+                        result = (code, msg_text)
 
             if max_date > self.last_date:
                 self.last_date = max_date
