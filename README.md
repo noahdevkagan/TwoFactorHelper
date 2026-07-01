@@ -6,6 +6,12 @@ A tiny macOS menu bar app that watches iMessage for two-factor authentication co
 
 macOS 13+ · Apple Silicon & Intel · Free & open source
 
+<p align="center">
+  <a href="https://noahdevkagan.github.io/TwoFactorHelper/">
+    <img src="docs/assets/screenshot.png" alt="2FA Helper — auto-copies verification codes from iMessage to your clipboard" width="640">
+  </a>
+</p>
+
 ---
 
 ## How it works
