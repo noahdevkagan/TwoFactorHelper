@@ -18,6 +18,11 @@ macOS 13+ · Apple Silicon & Intel · Free & open source
 
 TwoFactorHelper runs quietly in your menu bar (look for the 🛡️ shield icon). Every 2 seconds it checks your local Messages database for new incoming texts, recognizes 2FA/verification codes using a set of matching rules, and:
 
+<p align="center">
+  <img src="docs/assets/app-menubar.png" alt="TwoFactorHelper menu bar dropdown showing the latest code copied to the clipboard" width="420">
+</p>
+
+
 - 📋 **Copies the code to your clipboard** automatically
 - 🔔 **Shows a native macOS notification** with the code
 - 🔢 **Displays the code in the menu bar** next to the icon (clears after 30s)
